@@ -22,6 +22,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.HistoricValuesActivity" />
+
         <service
             android:name=".sync.QuoteIntentService"
             android:exported="false" />
