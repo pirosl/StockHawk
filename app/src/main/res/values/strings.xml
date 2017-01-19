@@ -38,4 +38,10 @@
 
     <string name="toast_invalid_stock">%1$s is not a valid stock symbol!</string>
 
+    <!-- Activity parameter -->
+    <string name="activity_symbol_parameter" translatable="false">symbol</string>
+
+    <!-- Historic values activity date formatter -->
+    <string name="activity_historic_date_formatter" translatable="false">dd MM yyyy</string>
+
 </resources>

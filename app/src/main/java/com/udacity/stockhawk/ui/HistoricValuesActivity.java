@@ -1,10 +1,15 @@
 package com.udacity.stockhawk.ui;
 
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 
 import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -14,20 +19,64 @@ import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IFillFormatter;
-import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.data.Contract;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Created by lucian on 03/01/2017.
  */
-public class HistoricValuesActivity extends AppCompatActivity {
+public class HistoricValuesActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+        OnChartValueSelectedListener {
+
+    class HistoryDay implements Comparable<HistoryDay> {
+
+        private long timeStamp;
+        private float value;
+
+        public HistoryDay(long timeStamp, float value) {
+            this.timeStamp = timeStamp;
+            this.value = value;
+        }
+
+        public float getValue() {
+            return value;
+        }
+
+        public String getDate() {
+            SimpleDateFormat sdf = new SimpleDateFormat(getResources().getString(R.string.activity_historic_date_formatter));
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(timeStamp);
+
+            return sdf.format(calendar.getTime());
+        }
+
+        @Override
+        public int compareTo(HistoryDay o) {
+            if(timeStamp < o.timeStamp)
+                return -1;
+            if(timeStamp > o.timeStamp)
+                return 1;
+            return 0;
+        }
+    }
+
+    private static final int STOCK_HISTORY_LOADER = 0;
+    private String symbol;
+    private Vector<HistoryDay> historyData;
+
     private final int itemcount = 12;
 
     @BindView(R.id.historic_values_chart)
@@ -40,6 +89,11 @@ public class HistoricValuesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_historic_values);
         ButterKnife.bind(this);
 
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null)
+            symbol = bundle.getString(getResources().getString(R.string.activity_symbol_parameter));
+        getSupportLoaderManager().initLoader(STOCK_HISTORY_LOADER, null, this);
+
         historicValuesChart.getDescription().setEnabled(false);
         historicValuesChart.setBackgroundColor(Color.WHITE);
         historicValuesChart.setDrawGridBackground(false);
@@ -47,7 +101,7 @@ public class HistoricValuesActivity extends AppCompatActivity {
         historicValuesChart.setHighlightFullBarEnabled(false);
         historicValuesChart.setGridBackgroundColor(Color.WHITE);
 
-        populateChartData();
+        historicValuesChart.setOnChartValueSelectedListener(this);
     }
 
 
@@ -55,27 +109,36 @@ public class HistoricValuesActivity extends AppCompatActivity {
         CombinedData data = new CombinedData();
 
         data.setData(generateLineData());
-        data.setData(generateBarData());
+
+        //data.setData(generateBarData());
 
         XAxis xAxis = historicValuesChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
         xAxis.setAxisMinimum(0f);
         xAxis.setGranularity(1f);
         xAxis.setAxisMaximum(data.getXMax() + 0.25f);
-
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawLabels(false);
         xAxis.setDrawGridLines(false);
 
         YAxis leftYAxis = historicValuesChart.getAxisLeft();
         leftYAxis.setDrawAxisLine(false);
         leftYAxis.setDrawZeroLine(false);
         leftYAxis.setDrawGridLines(false);
+        leftYAxis.setDrawLabels(false);
 
         YAxis rightYAxis = historicValuesChart.getAxisRight();
         rightYAxis.setDrawAxisLine(false);
         rightYAxis.setDrawZeroLine(false);
         rightYAxis.setDrawGridLines(false);
+        rightYAxis.setDrawLabels(false);
 
         historicValuesChart.setData(data);
+
+        // get the legend (only possible after setting data)
+        Legend l = historicValuesChart.getLegend();
+        l.setEnabled(false);
+
         historicValuesChart.invalidate();
     }
 
@@ -84,20 +147,26 @@ public class HistoricValuesActivity extends AppCompatActivity {
         LineData d = new LineData();
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
+        Collections.sort(historyData);
 
-        for (int index = 0; index < itemcount; index++)
-            entries.add(new Entry(index + 0.5f, getRandom(15, 5)));
+        for(int position = 0; position < historyData.size(); ++position) {
+            entries.add(new Entry(position + 0.5f, historyData.get(position).getValue()));
+            Timber.d(historyData.get(position).getDate() + " = " + historyData.get(position).getValue());
+        }
 
-        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        LineDataSet set = new LineDataSet(entries, null);
+        set.setDrawCircles(false);
+        set.setDrawHorizontalHighlightIndicator(false);
+
         set.setColor(Color.rgb(240, 238, 70));
-        set.setLineWidth(2.5f);
-        set.setCircleColor(Color.rgb(240, 238, 70));
-        set.setCircleRadius(5f);
-        set.setFillColor(Color.rgb(240, 238, 70));
+        set.setLineWidth(1.5f);
+       // set.setCircleColor(Color.rgb(240, 238, 70));
+        //set.setCircleRadius(5f);
+      //  set.setFillColor(Color.rgb(240, 238, 70));
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-        set.setDrawValues(true);
-        set.setValueTextSize(10f);
-        set.setValueTextColor(Color.rgb(240, 238, 70));
+        set.setDrawValues(false);
+      //  set.setValueTextSize(10f);
+       // set.setValueTextColor(Color.rgb(240, 238, 70));
 
         set.setFillAlpha(255);
         set.setDrawFilled(true);
@@ -105,7 +174,7 @@ public class HistoricValuesActivity extends AppCompatActivity {
         set.setFillColor(Color.RED);
         set.setHighLightColor(Color.rgb(244, 117, 117));
         set.setDrawCircleHole(false);
-        set.setFillFormatter(new IFillFormatter() {
+      /*  set.setFillFormatter(new IFillFormatter() {
             @Override
             public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
                 return historicValuesChart.getAxisLeft().getAxisMinimum();
@@ -113,7 +182,7 @@ public class HistoricValuesActivity extends AppCompatActivity {
         });
 
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        d.addDataSet(set);
+        */d.addDataSet(set);
 
         return d;
     }
@@ -162,4 +231,50 @@ public class HistoricValuesActivity extends AppCompatActivity {
         return (float) (Math.random() * range) + startsfrom;
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this,
+                Contract.Quote.makeUriForStock(symbol),
+                Contract.Quote.QUOTE_COLUMNS,
+                null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        historyData = new Vector<>();
+        if(data.getCount() > 0) {
+            data.moveToFirst();
+            String historyString = data.getString(Contract.Quote.POSITION_HISTORY);
+
+            StringTokenizer historyParser = new StringTokenizer(historyString, "\n");
+            while(historyParser.hasMoreTokens()) {
+                StringTokenizer oneDayParser = new StringTokenizer(historyParser.nextToken(), ",");
+                long timeStamp = Long.valueOf(oneDayParser.nextToken()).longValue();
+                float val = Float.valueOf(oneDayParser.nextToken()).floatValue();
+
+                historyData.add(new HistoryDay(timeStamp, val));
+            }
+        }
+
+        populateChartData();
+    }
+
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    @Override
+    public void onValueSelected(Entry e, Highlight h) {
+
+        int position = (int)(e.getX());
+
+        Timber.d(position + " " + historyData.get(position).getDate() + " = " + historyData.get(position).getValue());
+    }
+
+    @Override
+    public void onNothingSelected() {
+
+    }
 }
