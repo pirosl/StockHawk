@@ -7,6 +7,9 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.RadioGroup;
+import android.widget.ToggleButton;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.Legend;
@@ -73,11 +76,26 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
         }
     }
 
+    static final RadioGroup.OnCheckedChangeListener ToggleListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(final RadioGroup radioGroup, final int i) {
+            for (int j = 0; j < radioGroup.getChildCount(); j++) {
+                final ToggleButton view = (ToggleButton) radioGroup.getChildAt(j);
+                view.setChecked(view.getId() == i);
+            }
+        }
+    };
+
     private static final int STOCK_HISTORY_LOADER = 0;
     private String symbol;
     private Vector<HistoryDay> historyData;
 
     private final int itemcount = 12;
+
+    public void onToggle(View view) {
+        ((RadioGroup)view.getParent()).check(view.getId());
+        // app specific stuff ..
+    }
 
     @BindView(R.id.historic_values_chart)
     CombinedChart historicValuesChart;
@@ -88,6 +106,8 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
 
         setContentView(R.layout.activity_historic_values);
         ButterKnife.bind(this);
+
+        ((RadioGroup) findViewById(R.id.toggleGroup)).setOnCheckedChangeListener(ToggleListener);
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null)
