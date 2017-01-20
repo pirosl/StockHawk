@@ -44,4 +44,10 @@
     <!-- Historic values activity date formatter -->
     <string name="activity_historic_date_formatter" translatable="false">dd MM yyyy</string>
 
+    <!-- Historic values interval selector values -->
+    <string name="activity_historic_data_one_month">1 month</string>
+    <string name="activity_historic_data_three_months">3 months</string>
+    <string name="activity_historic_data_six_months">6 months</string>
+    <string name="activity_historic_data_one_year">1 year</string>
+    <string name="activity_historic_data_two_years">2 years</string>
 </resources>
