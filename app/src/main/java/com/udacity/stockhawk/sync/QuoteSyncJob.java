@@ -72,6 +72,7 @@ public final class QuoteSyncJob {
                 final String symbol = iterator.next();
 
                 Stock stock = quotes.get(symbol);
+
                 StockQuote quote = stock.getQuote();
 
                 try {
@@ -101,6 +102,8 @@ public final class QuoteSyncJob {
 
 
                     quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
+
+                    quoteCV.put(Contract.Quote.COLUMN_NAME, stock.getName());
 
                     quoteCVs.add(quoteCV);
                 }
