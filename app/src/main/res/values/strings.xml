@@ -41,6 +41,9 @@
     <!-- Activity parameter -->
     <string name="activity_symbol_parameter" translatable="false">symbol</string>
 
+    <!-- Stock change format -->
+    <string name="stock_change_format" translatable="false">%1$s (%2$s)</string>
+
     <!-- Historic values activity date formatter -->
     <string name="activity_historic_date_formatter" translatable="false">dd MM yyyy</string>
 

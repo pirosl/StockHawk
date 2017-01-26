@@ -11,10 +11,10 @@ import android.widget.TextView;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
-import com.udacity.stockhawk.data.PrefUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Formatter;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -35,11 +35,10 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
         dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
         dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
-        dollarFormatWithPlus.setPositivePrefix("+$");
+        dollarFormatWithPlus.setPositivePrefix("$");
         percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.getDefault());
         percentageFormat.setMaximumFractionDigits(2);
         percentageFormat.setMinimumFractionDigits(2);
-        percentageFormat.setPositivePrefix("+");
     }
 
     void setCursor(Cursor cursor) {
@@ -75,22 +74,18 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
         float percentageChange = cursor.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE);
 
         if (rawAbsoluteChange > 0) {
-            holder.change.setBackgroundResource(R.drawable.percent_change_pill_green);
+            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockGreen));//setBackgroundResource(R.drawable.percent_change_pill_green);
         } else {
-            holder.change.setBackgroundResource(R.drawable.percent_change_pill_red);
+            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockRed));//setBackgroundResource(R.drawable.percent_change_pill_red);
         }
 
         String change = dollarFormatWithPlus.format(rawAbsoluteChange);
         String percentage = percentageFormat.format(percentageChange / 100);
 
-        if (PrefUtils.getDisplayMode(context)
-                .equals(context.getString(R.string.pref_display_mode_absolute_key))) {
-            holder.change.setText(change);
-        } else {
-            holder.change.setText(percentage);
-        }
-
-
+        StringBuilder changeSB = new StringBuilder();
+        Formatter formatter = new Formatter(changeSB, Locale.getDefault());
+        formatter.format(context.getResources().getString(R.string.stock_change_format), change, percentage);
+            holder.change.setText(changeSB.toString());
     }
 
     @Override
