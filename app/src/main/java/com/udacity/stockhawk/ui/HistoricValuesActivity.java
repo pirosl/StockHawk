@@ -1,9 +1,9 @@
 package com.udacity.stockhawk.ui;
 
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -15,9 +15,6 @@ import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -31,6 +28,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -42,7 +42,10 @@ import timber.log.Timber;
  * Created by lucian on 03/01/2017.
  */
 public class HistoricValuesActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
-        OnChartValueSelectedListener {
+        OnChartValueSelectedListener, RadioGroup.OnCheckedChangeListener {
+
+    private static int months[] = {1,3,6,12,24};
+    private int selected = 0;
 
     class HistoryDay implements Comparable<HistoryDay> {
 
@@ -58,6 +61,16 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
             return value;
         }
 
+        public int getMonths() {
+            Date today = new Date(); // the date of today
+
+            long daysInMs = today.getTime() - timeStamp; //days in MS's
+
+            int months = (int)(daysInMs/1000/60/60/12/30);
+
+            return months;
+        }
+
         public String getDate() {
             SimpleDateFormat sdf = new SimpleDateFormat(getResources().getString(R.string.activity_historic_date_formatter));
             Calendar calendar = Calendar.getInstance();
@@ -68,37 +81,30 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
 
         @Override
         public int compareTo(HistoryDay o) {
-            if(timeStamp < o.timeStamp)
+            if (timeStamp < o.timeStamp)
                 return -1;
-            if(timeStamp > o.timeStamp)
+            if (timeStamp > o.timeStamp)
                 return 1;
             return 0;
         }
     }
 
-    static final RadioGroup.OnCheckedChangeListener ToggleListener = new RadioGroup.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(final RadioGroup radioGroup, final int i) {
-            for (int j = 0; j < radioGroup.getChildCount(); j++) {
-                final ToggleButton view = (ToggleButton) radioGroup.getChildAt(j);
-                view.setChecked(view.getId() == i);
-            }
-        }
-    };
+
+    @BindView(R.id.historic_values_chart)
+    CombinedChart historicValuesChart;
+    @BindView(R.id.btn_six_month)
+    ToggleButton toggleButtonSixMonths;
+    @BindView(R.id.toggleGroup)
+    RadioGroup toggleGoup;
 
     private static final int STOCK_HISTORY_LOADER = 0;
     private String symbol;
     private Vector<HistoryDay> historyData;
 
-    private final int itemcount = 12;
-
     public void onToggle(View view) {
-        ((RadioGroup)view.getParent()).check(view.getId());
-        // app specific stuff ..
+        ((RadioGroup) view.getParent()).clearCheck();
+        ((RadioGroup) view.getParent()).check(view.getId());
     }
-
-    @BindView(R.id.historic_values_chart)
-    CombinedChart historicValuesChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,21 +113,31 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
         setContentView(R.layout.activity_historic_values);
         ButterKnife.bind(this);
 
-        ((RadioGroup) findViewById(R.id.toggleGroup)).setOnCheckedChangeListener(ToggleListener);
-
         Bundle bundle = getIntent().getExtras();
-        if(bundle != null)
+        if (bundle != null)
             symbol = bundle.getString(getResources().getString(R.string.activity_symbol_parameter));
         getSupportLoaderManager().initLoader(STOCK_HISTORY_LOADER, null, this);
 
+        StringBuilder activityTitle = new StringBuilder();
+        Formatter formatter = new Formatter(activityTitle, Locale.getDefault());
+        formatter.format(getBaseContext().getResources().getString(R.string.label_activity_historicvalues), symbol);
+
+        this.setTitle(activityTitle.toString());
+
         historicValuesChart.getDescription().setEnabled(false);
-        historicValuesChart.setBackgroundColor(Color.WHITE);
+        historicValuesChart.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));//getBaseContext().getResources().getColor(R.color.colorPrimaryDark));
         historicValuesChart.setDrawGridBackground(false);
         historicValuesChart.setDrawBarShadow(false);
         historicValuesChart.setHighlightFullBarEnabled(false);
-        historicValuesChart.setGridBackgroundColor(Color.WHITE);
+        historicValuesChart.setGridBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));//getBaseContext().getResources().getColor(R.color.colorPrimaryDark));
+        historicValuesChart.setPinchZoom(false);
+        historicValuesChart.setDoubleTapToZoomEnabled(false);
 
+        historicValuesChart.setViewPortOffsets(4f, 4f, 4f, 4f);
         historicValuesChart.setOnChartValueSelectedListener(this);
+
+        toggleGoup.setOnCheckedChangeListener(this);
+        toggleGoup.check(toggleButtonSixMonths.getId());
     }
 
 
@@ -130,13 +146,11 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
 
         data.setData(generateLineData());
 
-        //data.setData(generateBarData());
-
         XAxis xAxis = historicValuesChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
-        xAxis.setAxisMinimum(0f);
+        xAxis.setAxisMinimum(data.getXMin()/*0f*/);
         xAxis.setGranularity(1f);
-        xAxis.setAxisMaximum(data.getXMax() + 0.25f);
+        xAxis.setAxisMaximum(data.getXMax()/* + 0.25f*/);
         xAxis.setDrawAxisLine(false);
         xAxis.setDrawLabels(false);
         xAxis.setDrawGridLines(false);
@@ -159,6 +173,8 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
         Legend l = historicValuesChart.getLegend();
         l.setEnabled(false);
 
+        historicValuesChart.setPadding(0, 0, 0, 0);
+
         historicValuesChart.invalidate();
     }
 
@@ -169,86 +185,29 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
         ArrayList<Entry> entries = new ArrayList<Entry>();
         Collections.sort(historyData);
 
-        for(int position = 0; position < historyData.size(); ++position) {
-            entries.add(new Entry(position + 0.5f, historyData.get(position).getValue()));
-            Timber.d(historyData.get(position).getDate() + " = " + historyData.get(position).getValue());
+        int xPos = 0;
+        for (int position = 0; position < historyData.size(); ++position) {
+            if(historyData.get(position).getMonths() <= months[selected])
+                entries.add(new Entry(xPos++ /* + 0.5f */, historyData.get(xPos).getValue()));
         }
 
         LineDataSet set = new LineDataSet(entries, null);
         set.setDrawCircles(false);
         set.setDrawHorizontalHighlightIndicator(false);
 
-        set.setColor(Color.rgb(240, 238, 70));
+        set.setColor(getBaseContext().getResources().getColor(R.color.colorAccent));
         set.setLineWidth(1.5f);
-       // set.setCircleColor(Color.rgb(240, 238, 70));
-        //set.setCircleRadius(5f);
-      //  set.setFillColor(Color.rgb(240, 238, 70));
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         set.setDrawValues(false);
-      //  set.setValueTextSize(10f);
-       // set.setValueTextColor(Color.rgb(240, 238, 70));
 
         set.setFillAlpha(255);
         set.setDrawFilled(true);
-        set.setFillAlpha(110);
-        set.setFillColor(Color.RED);
-        set.setHighLightColor(Color.rgb(244, 117, 117));
+        set.setFillColor(getBaseContext().getResources().getColor(R.color.colorPrimary));
+        set.setHighLightColor(getBaseContext().getResources().getColor(R.color.colorAccent));
         set.setDrawCircleHole(false);
-      /*  set.setFillFormatter(new IFillFormatter() {
-            @Override
-            public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
-                return historicValuesChart.getAxisLeft().getAxisMinimum();
-            }
-        });
-
-        set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        */d.addDataSet(set);
+        d.addDataSet(set);
 
         return d;
-    }
-
-    private BarData generateBarData() {
-
-        ArrayList<BarEntry> entries1 = new ArrayList<BarEntry>();
-        ArrayList<BarEntry> entries2 = new ArrayList<BarEntry>();
-
-        for (int index = 0; index < itemcount; index++) {
-            entries1.add(new BarEntry(0, getRandom(25, 25)));
-
-            // stacked
-            entries2.add(new BarEntry(0, new float[]{getRandom(13, 12), getRandom(13, 12)}));
-        }
-
-        BarDataSet set1 = new BarDataSet(entries1, "Bar 1");
-        set1.setColor(Color.rgb(60, 220, 78));
-        set1.setValueTextColor(Color.rgb(60, 220, 78));
-        set1.setValueTextSize(10f);
-        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-
-        BarDataSet set2 = new BarDataSet(entries2, "");
-        set2.setStackLabels(new String[]{"Stack 1", "Stack 2"});
-        set2.setColors(new int[]{Color.rgb(61, 165, 255), Color.rgb(23, 197, 255)});
-        set2.setValueTextColor(Color.rgb(61, 165, 255));
-        set2.setValueTextSize(10f);
-        set2.setAxisDependency(YAxis.AxisDependency.LEFT);
-
-        float groupSpace = 0.06f;
-        float barSpace = 0.02f; // x2 dataset
-        float barWidth = 0.45f; // x2 dataset
-        // (0.45 + 0.02) * 2 + 0.06 = 1.00 -> interval per "group"
-
-        BarData d = new BarData(set1, set2);
-        d.setBarWidth(barWidth);
-
-        // make this BarData object grouped
-        d.groupBars(0, groupSpace, barSpace); // start at x = 0
-
-        return d;
-    }
-
-
-    protected float getRandom(float range, float startsfrom) {
-        return (float) (Math.random() * range) + startsfrom;
     }
 
     @Override
@@ -262,12 +221,12 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         historyData = new Vector<>();
-        if(data.getCount() > 0) {
+        if (data.getCount() > 0) {
             data.moveToFirst();
             String historyString = data.getString(Contract.Quote.POSITION_HISTORY);
 
             StringTokenizer historyParser = new StringTokenizer(historyString, "\n");
-            while(historyParser.hasMoreTokens()) {
+            while (historyParser.hasMoreTokens()) {
                 StringTokenizer oneDayParser = new StringTokenizer(historyParser.nextToken(), ",");
                 long timeStamp = Long.valueOf(oneDayParser.nextToken()).longValue();
                 float val = Float.valueOf(oneDayParser.nextToken()).floatValue();
@@ -288,13 +247,32 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
     @Override
     public void onValueSelected(Entry e, Highlight h) {
 
-        int position = (int)(e.getX());
+        int position = (int) (e.getX());
 
-        Timber.d(position + " " + historyData.get(position).getDate() + " = " + historyData.get(position).getValue());
+
+        Timber.d(/*position + " " + historyData.get(position).getDate() + " = " + historyData.get(position).getValue() + " " +*/ h.getX() + " " + h.getY() + " " + h.getDataSetIndex());
     }
 
     @Override
     public void onNothingSelected() {
 
+    }
+
+    @Override
+    public void onCheckedChanged(final RadioGroup radioGroup, final int i) {
+        for (int j = 0; j < radioGroup.getChildCount(); j++) {
+            final ToggleButton view = (ToggleButton) radioGroup.getChildAt(j);
+
+            if (view.getId() == i) {
+                view.setTextColor(radioGroup.getResources().getColor(R.color.material_grey_200));
+                view.setChecked(true);
+                selected = j;
+            } else {
+                view.setTextColor(radioGroup.getResources().getColor(R.color.material_grey_700));
+                view.setChecked(false);
+            }
+        }
+        if(historyData != null)
+            populateChartData();
     }
 }

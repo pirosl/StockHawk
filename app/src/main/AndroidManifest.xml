@@ -22,7 +22,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.HistoricValuesActivity" />
+        <activity
+            android:name=".ui.HistoricValuesActivity"
+            android:label="@string/label_activity_historicvalues"
+            android:parentActivityName=".ui.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.udacity.stockhawk.ui.MainActivity" />
+        </activity>
 
         <service
             android:name=".sync.QuoteIntentService"

@@ -3,6 +3,8 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/historic_values_chart"
         android:layout_width="match_parent"
@@ -24,8 +26,7 @@
             android:textOn="@string/activity_historic_data_one_month"
             android:textOff="@string/activity_historic_data_one_month"
             android:contentDescription="@string/activity_historic_data_one_month"
-            android:onClick="onToggle"
-            android:checked="true" />
+            android:onClick="onToggle" />
         <ToggleButton android:id="@+id/btn_three_month"
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
