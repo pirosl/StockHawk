@@ -13,11 +13,13 @@
 
     <style name="BidPriceTextStyle">
         <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/material_white</item>
     </style>
 
     <style name="StockSymbolTextStyle">
         <item name="android:textSize">25sp</item>
         <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/material_white</item>
     </style>
 
     <style name="StockNameTextStyle">

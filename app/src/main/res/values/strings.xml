@@ -55,4 +55,9 @@
     <string name="activity_historic_data_six_months">6 months</string>
     <string name="activity_historic_data_one_year">1 year</string>
     <string name="activity_historic_data_two_years">2 years</string>
+
+    <!-- Widget -->
+    <string name="title_widget">StockHawk</string>
+
+    <string name="empty_list">No data</string>
 </resources>
