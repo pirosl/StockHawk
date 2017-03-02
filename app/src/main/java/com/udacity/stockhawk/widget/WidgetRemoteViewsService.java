@@ -39,7 +39,7 @@ public class WidgetRemoteViewsService extends RemoteViewsService {
                 dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
                 dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
                 dollarFormatWithPlus.setPositivePrefix("$");
-                percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.getDefault());
+                percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.US);//getDefault());
                 percentageFormat.setMaximumFractionDigits(2);
                 percentageFormat.setMinimumFractionDigits(2);
             }

@@ -34,9 +34,9 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
         this.clickHandler = clickHandler;
 
         dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
-        dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
+        dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US); //use US locale to format numbers
         dollarFormatWithPlus.setPositivePrefix("$");
-        percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.getDefault());
+        percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.US); //use US locale to format numbers
         percentageFormat.setMaximumFractionDigits(2);
         percentageFormat.setMinimumFractionDigits(2);
     }
@@ -73,16 +73,16 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
         float percentageChange = cursor.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE);
 
         if (rawAbsoluteChange > 0) {
-            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockGreen));//setBackgroundResource(R.drawable.percent_change_pill_green);
+            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockGreen));
         } else {
-            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockRed));//setBackgroundResource(R.drawable.percent_change_pill_red);
+            holder.change.setTextColor(context.getResources().getColor(R.color.colorStockRed));
         }
 
         String change = dollarFormatWithPlus.format(rawAbsoluteChange);
         String percentage = percentageFormat.format(percentageChange / 100);
 
         StringBuilder changeSB = new StringBuilder();
-        Formatter formatter = new Formatter(changeSB, Locale.getDefault());
+        Formatter formatter = new Formatter(changeSB, Locale.US);//getDefault());
         formatter.format(context.getResources().getString(R.string.stock_change_format), change, percentage);
             holder.change.setText(changeSB.toString());
     }
