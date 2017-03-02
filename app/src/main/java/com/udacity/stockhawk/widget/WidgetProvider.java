@@ -37,21 +37,12 @@ public class WidgetProvider extends AppWidgetProvider {
             } else {
                 setRemoteAdapterV11(context, views);
             }
-     /*       boolean useDetailActivity = context.getResources()
-                    .getBoolean(R.bool.use_detail_activity);
-            Intent clickIntentTemplate = useDetailActivity
-                    ? new Intent(context, DetailActivity.class)
-                    : new Intent(context, MainActivity.class);*/
             Intent clickIntent = new Intent(context, HistoricValuesActivity.class);
-          //  PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
-           //         .addNextIntentWithParentStack(clickIntentTemplate)
-            //        .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
             PendingIntent startActivityPendingIntent = PendingIntent.getActivity(context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             views.setPendingIntentTemplate(R.id.widget_list, startActivityPendingIntent);
 
             views.setEmptyView(R.id.widget_list, R.id.widget_empty);
 
-            // Tell the AppWidgetManager to perform an update on the current app widget
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
     }

@@ -7,7 +7,8 @@
         android:id="@+id/historic_values_chart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:contentDescription="@string/historic_values_chart" />
 
     <RadioGroup android:id="@+id/toggleGroup"
         android:layout_width="fill_parent"

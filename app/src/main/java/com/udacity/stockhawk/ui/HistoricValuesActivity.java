@@ -36,7 +36,6 @@ import java.util.Vector;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import timber.log.Timber;
 
 /**
  * Created by lucian on 03/01/2017.
@@ -125,11 +124,11 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
         this.setTitle(activityTitle.toString());
 
         historicValuesChart.getDescription().setEnabled(false);
-        historicValuesChart.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));//getBaseContext().getResources().getColor(R.color.colorPrimaryDark));
+        historicValuesChart.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));
         historicValuesChart.setDrawGridBackground(false);
         historicValuesChart.setDrawBarShadow(false);
         historicValuesChart.setHighlightFullBarEnabled(false);
-        historicValuesChart.setGridBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));//getBaseContext().getResources().getColor(R.color.colorPrimaryDark));
+        historicValuesChart.setGridBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimaryDark));
         historicValuesChart.setPinchZoom(false);
         historicValuesChart.setDoubleTapToZoomEnabled(false);
 
@@ -247,10 +246,6 @@ public class HistoricValuesActivity extends AppCompatActivity implements LoaderM
     @Override
     public void onValueSelected(Entry e, Highlight h) {
 
-        int position = (int) (e.getX());
-
-
-        Timber.d(/*position + " " + historyData.get(position).getDate() + " = " + historyData.get(position).getValue() + " " +*/ h.getX() + " " + h.getY() + " " + h.getDataSetIndex());
     }
 
     @Override

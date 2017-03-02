@@ -16,7 +16,6 @@ import java.text.NumberFormat;
 import java.util.Formatter;
 import java.util.Locale;
 
-
 /**
  * Created by Lucian Piros on 18/02/2017.
  *
@@ -106,11 +105,7 @@ public class WidgetRemoteViewsService extends RemoteViewsService {
                 views.setTextViewText(R.id.change, changeSB.toString());
 
 
-                final Intent detailsIntent = new Intent();//getApplicationContext(), HistoricValuesActivity.class);
-             //   Bundle bundle = new Bundle();
-              //  bundle.putString(getResources().getString(R.string.activity_symbol_parameter), data.getString(Contract.Quote.POSITION_SYMBOL));
-               // detailsIntent.putExtras(bundle);
-            //    detailsIntent.setData(Contract.Quote.makeUriForStock(data.getString(Contract.Quote.POSITION_SYMBOL)));
+                final Intent detailsIntent = new Intent();
                 Bundle bundle = new Bundle();
                 bundle.putString(getResources().getString(R.string.activity_symbol_parameter), data.getString(Contract.Quote.POSITION_SYMBOL));
                 detailsIntent.putExtras(bundle);

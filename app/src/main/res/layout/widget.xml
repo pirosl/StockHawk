@@ -42,6 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fontFamily="sans-serif-condensed"
+            android:textColor="@color/material_white"
             android:gravity="center"
             android:text="@string/empty_list"
             android:textAppearance="?android:textAppearanceLarge"/>
