@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.widget.RemoteViews;
 
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.sync.QuoteSyncJob;
 import com.udacity.stockhawk.ui.HistoricValuesActivity;
 import com.udacity.stockhawk.ui.MainActivity;
 
@@ -55,12 +56,12 @@ public class WidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         super.onReceive(context, intent);
-       // if (StockAdapter.ACTION_DATA_UPDATED.equals(intent.getAction())) {
+        if (QuoteSyncJob.ACTION_DATA_UPDATED.equals(intent.getAction())) {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
                     new ComponentName(context, getClass()));
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
-       // }
+        }
     }
 
     /**
