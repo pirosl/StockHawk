@@ -73,9 +73,8 @@ public final class QuoteSyncJob {
 
                 Stock stock = quotes.get(symbol);
 
-                StockQuote quote = stock.getQuote();
-
                 try {
+                    StockQuote quote = stock.getQuote();
 
                     float price = quote.getPrice().floatValue();
                     float change = quote.getChange().floatValue();
@@ -106,15 +105,13 @@ public final class QuoteSyncJob {
                     quoteCV.put(Contract.Quote.COLUMN_NAME, stock.getName());
 
                     quoteCVs.add(quoteCV);
-                }
-                catch (Exception e)
-                {
+                } catch (NullPointerException e) {
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             // first remove the symbol from prefferences
-                            PrefUtils.editStockPref(context,symbol,false);
+                            PrefUtils.editStockPref(context, symbol, false);
                             Toast.makeText(context, context.getString(R.string.toast_invalid_stock, symbol), Toast.LENGTH_SHORT).show();
                         }
                     });
