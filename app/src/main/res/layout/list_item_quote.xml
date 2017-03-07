@@ -19,14 +19,14 @@
             style="@style/StockSymbolTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="left|center_vertical"
+            android:gravity="start|center_vertical"
             tools:text="GOOG" />
         <TextView
             android:id="@+id/name"
             style="@style/StockNameTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="left|center_vertical"
+            android:gravity="start|center_vertical"
             android:maxLines="1"
             tools:text="GOOG" />
     </LinearLayout>
@@ -34,7 +34,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="right"
+        android:gravity="end"
         android:orientation="vertical">
         <TextView
             android:id="@+id/price"
